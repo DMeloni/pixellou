@@ -1,5 +1,5 @@
 ﻿
-const DIM_BLOC = 16;
+
 var width =  1024,//document.documentElement.clientWidth - document.documentElement.clientWidth % DIM_BLOC - DIM_BLOC, 
 	height = 640,//document.documentElement.clientHeight - document.documentElement.clientHeight % DIM_BLOC - DIM_BLOC,
 	gLoop,
@@ -26,7 +26,10 @@ var nombreMechants;
 var nombrePlateformes;
 var defilementVerticalPossible = false;	
 var defilementHorizontalPossible = false;
+var nbBlocsRestants;
 var reussite = false; // Flag de reussite du niveau (agit sur la touche Entrée)
+var balles = [];
+
 /*
 * Déplace le mechant 
 */
@@ -65,26 +68,26 @@ var deplacePlateformeDeHautEnBas = function(){
 }
 var deplaceHerosAvecPlateformeHorizontale = function(entite){
 		var tailleMasque = 0.5 ;
-		if((player.y <= (((entite.Y - 0.5) * 16))) 
-		  && (player.y >= ((entite.Y - (1.5 + player.fallSpeed/6)) * 16))
-		  && (player.x + 8 >= entite.X * 16) 
-		  && (player.x - 8 <= entite.X * 16)
+		if((player.y <= (((entite.Y - 0.5) * DIM_BLOC))) 
+		  && (player.y >= ((entite.Y - (1.5 + player.fallSpeed/6)) * DIM_BLOC))
+		  && (player.x + 8 >= entite.X * DIM_BLOC) 
+		  && (player.x - 8 <= entite.X * DIM_BLOC)
 		   ){		
 			player.isOnPlatform = true;
 			player.fallStop();		   
-			player.setPosition(player.x, (entite.Y - 1  + entite.sensdeplacement) * 16 );
+			player.setPosition(player.x, (entite.Y - 1  + entite.sensdeplacement) * DIM_BLOC );
 		}
 }
 var deplaceHerosAvecPlateformeVerticale = function(entite){
 		var tailleMasque = 0.5 ;
-		if((player.y <= (((entite.Y - 1) * 16))) 
-		  && (player.y >= ((entite.Y - (1.5 + player.fallSpeed/6)) * 16))
-		  && (player.x >= entite.X * 16) 
-		  && (player.x <= entite.X * 16)
+		if((player.y <= (((entite.Y - 1) * DIM_BLOC))) 
+		  && (player.y >= ((entite.Y - (1.5 + player.fallSpeed/6)) * DIM_BLOC))
+		  && (player.x >= entite.X * DIM_BLOC) 
+		  && (player.x <= entite.X * DIM_BLOC)
 		   ){		
 			player.isOnPlatform = true;
 			player.fallStop();		   
-			player.setPosition(player.x + entite.sensdeplacement* 16, (entite.Y - 1) * 16 );
+			player.setPosition(player.x + entite.sensdeplacement* DIM_BLOC, (entite.Y - 1) * DIM_BLOC );
 		}
 }
 var detecteColisionAvecToutesEntites = function(){
@@ -100,10 +103,8 @@ var detecteColisionAvecToutesEntites = function(){
 	});	*/
 }
 
-var map_modifiee;
-
 var generatemap = function(){
-	map_modifiee = map.clone();
+	map_modifiee = mapParDefaut.clone();
 	for (var i = 0; i < map_modifiee.length ; i++) {		
 		if(map_modifiee.length * DIM_BLOC > height){
 			defilementVerticalPossible = true;
@@ -152,19 +153,8 @@ var generatemap = function(){
 					platforms[nrOfPlatforms] = new Entite( j, i , 4);
 					nrOfPlatforms++;
 				}else if(map_modifiee[i][j] == '5'){
-					mechants[nombreMechants] = [];
-					mechants[nombreMechants]["X"] = j;
-					mechants[nombreMechants]["Y"] = i;
-					mechants[nombreMechants]['deplacement'] = 0;
-					mechants[nombreMechants]['codeMechant'] = nrOfPlatforms;
-					if(0.5 - Math.random() > 0){
-						mechants[nombreMechants]['sensdeplacement'] = 1/32;
-					}else{
-						mechants[nombreMechants]['sensdeplacement'] = -1/32;
-					}
+					mechants[nombreMechants] = new Troll(j, i);	
 					nombreMechants++;
-					platforms[nrOfPlatforms] = new Troll( j, i , 5);
-					platforms[nrOfPlatforms].deplaceTroll();
 					nrOfPlatforms++;
 				}
 			}
@@ -223,9 +213,11 @@ var reset  = function(e){
 	delete murs;
 	delete player;
 	delete map_modifiee;
+	delete balles;
 	mechants = [];
 	platforms = [];
 	murs      = [];
+	balles    = [];
 	plateformesVerticales = [];
 	plateformesHorizontales = [];
 	plateforme = [];
@@ -234,6 +226,8 @@ var reset  = function(e){
 	nrOfPlatforms = 0;
 	reussite = false;
 	generatemap();
+	map.initialize(map_modifiee);
+	nbBlocsRestants = NB_MAX_BLOC;
 	player = new Player();
 	var date = new Date(); 
 	timeStampDebut = date.getTime();
@@ -263,10 +257,7 @@ var detectDefilementVertical = function(){
 var GameLoop = function(){	
 	clear();
 
-	for (var numeroMechant = 0; numeroMechant < nombreMechants ; numeroMechant++) {
-		setTimeout(platforms[mechants[numeroMechant]['codeMechant']].deplaceTroll, 62);
-	}
-		
+
 	setTimeout(deplacePlateformeDeHautEnBas, 62);
 	setTimeout(deplacePlateformeDeGaucheADroite, 62);
 	
@@ -275,7 +266,16 @@ var GameLoop = function(){
 	detectDefilementVertical();
 
 	player.draw(decalageX, decalageY);
-	
+	balles.forEach(function(balle, index){
+		balle.draw(decalageX, decalageY);	
+		balle.deplace();	
+
+		if(balle.detecteCollision()){
+			console.debug("destruction balle");
+			delete balles[index];
+		}
+		
+	});		
 	plateformesVerticales.forEach(function(platform, index){
 		platform.draw(decalageX, decalageY);
 	});
@@ -288,7 +288,15 @@ var GameLoop = function(){
 	murs.forEach(function(mur, index){
 		mur.draw(decalageX, decalageY);
 	});
-	
+
+	mechants.forEach(function(troll, index){
+		if(troll.vivant){
+			troll.deplaceTroll();
+			troll.draw(decalageX, decalageY);
+		}else{
+			delete mechants[index];
+		}
+	});
 	
 	if(player.isContreUnMur){
 		player.couleurPiedCourant = player.couleurPiedAvecSaut;
@@ -319,17 +327,22 @@ var GameLoop = function(){
 	var dateFin = new Date();
 	timeStampFin = dateFin.getTime() - timeStampDebut;
 		
-	score = (30000- timeStampFin);
+	score = (TEMPS_MAX- timeStampFin);
 	if(score <= 0){
 		GameOver(0, 'TIME UP');
 	}
 	ctx.fillStyle = "#777777";
 	ctx.fillText("POINTS:" + score, 10, height-10);
 	
+	if(!player.isAlive()){
+		GameOver(0, "DEAD");
+	}
+	
 	if (state)
 		gLoop = setTimeout(GameLoop, 1500 / 50);
 }
-
+	
+	
 	var GameOver = function(pScore, pRaison){
 		state = false;
 		

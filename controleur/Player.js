@@ -3,12 +3,15 @@ var Player = function(){
 	ModelePlayer.call(that);
 	VuePlayer.call(that);
 	
+	that.PV = 2000;
+	that.directionActuelle = "droite";
+	
     that.jump = function() {
 		if (((!that.isJumping || that.isMultiSaut) && !that.isFalling)  || that.isSuperMultiSaut || that.isContreUnMur && that.nbSautsDisponibles > 0) {
 			that.nbSautsDisponibles --;				
 			that.fallSpeed = 0;
 			that.isJumping = true;
-			that.jumpSpeed = 16;
+			that.jumpSpeed = DIM_BLOC/2 + 1;
 		}
 	}
 	
@@ -35,11 +38,10 @@ var Player = function(){
 			
 		}
 		if(map_modifiee[parseInt((player.y - player.height ) / DIM_BLOC)][parseInt(player.x / DIM_BLOC)] == "4"){
-			GameOver(0, 'TETE BRULEE');
-			return;
+			player.enlevePV(100);
 		}	
 		
-		that.setPosition(that.x, that.y - that.jumpSpeed);		
+		that.setPosition(that.x, that.y - that.jumpSpeed);	
 		
 		//Pixellou redescend
 		that.jumpSpeed--;		
@@ -108,10 +110,11 @@ var Player = function(){
 			GameOver(score, 'WIN');	
 		}
 		if(map_modifiee[parseInt((player.y) / DIM_BLOC) + 1][parseInt(player.x / DIM_BLOC)] == "4"){
-			GameOver(0, 'FIRE');
+			player.enlevePV(100);
 		}	
 		if(map_modifiee[parseInt((player.y) / DIM_BLOC) + 1][parseInt(player.x / DIM_BLOC)] == "5"){
-			GameOver(0, 'KILL');
+			player.enlevePV(1);
+			
 		}	
 	}
 	
@@ -124,10 +127,10 @@ var Player = function(){
 			coordonneeX = player.x;
  
 			if( map_modifiee[parseInt((coordonneeY) / DIM_BLOC)][parseInt(coordonneeX / DIM_BLOC)] == "4"){
-				GameOver(0, 'FIRE');
+				player.enlevePV(100);
 			}
 			if( map_modifiee[parseInt((coordonneeY) / DIM_BLOC)][parseInt(coordonneeX / DIM_BLOC)] == "5"){
-				GameOver(0, 'KILL');
+				player.enlevePV(1);
 			}		
 			// Detection de la plate forme qui bouge
 				plateformesVerticales.forEach(function(plateformeVerticale, index){
@@ -173,7 +176,7 @@ var Player = function(){
 					   )){			
 						player.fallStop();
 						player.isOnPlatform = true;
-						player.setPosition(player.x, (i - 1) * DIM_BLOC ); 
+						player.setPosition(player.x, (i - 1) * DIM_BLOC ); 					
 						return;
 					}			
 				});	
@@ -209,8 +212,8 @@ var Player = function(){
 		that.deplacement(DIM_BLOC);
 	}	
 	//Effectue le deplacement du héros et de la caméra si besoin
-	that.deplacement = function(deplacementValue){		
-		that.repositionnement();	
+	that.deplacement = function(deplacementValue){
+		//that.repositionnement();	
 		that.isContreUnMur = false;
 		var defilement = false;
 		if(defilementHorizontalPossible
@@ -253,6 +256,26 @@ var Player = function(){
 			}
 		}
 	}	
+	
+	
+	that.tir = function(){
+		// Création d'un objet tir
+		var typeBalle = 2;
+		if(that.directionActuelle == "gauche"){
+			balles[balles.length] = new Balle(that.simpleX, that.simpleY, -1, typeBalle);
+		}
+		
+		if(that.directionActuelle == "droite"){
+			balles[balles.length] = new Balle(that.simpleX + 1, that.simpleY, 1, typeBalle);
+		}
+	}
+	
+	that.isAlive= function(){
+		if(player.PV > 0){
+			return true;
+		}
+		return false;
+	}
 	
 	return that;
 }

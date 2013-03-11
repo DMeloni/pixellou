@@ -64,7 +64,7 @@ if(isset($_GET['niveau']) && $_GET['niveau'] == 'next' && isset($_SESSION['monde
 			break;	
 		}
    }
-	header("Location: index.php?niveau=".$mondeSuivant); 
+	header("Location: .?niveau=".$mondeSuivant); 
 }
 else 
 if(isset($_GET['niveau']) && is_file($repMonde.$_GET['niveau']))
@@ -80,12 +80,14 @@ if(isset($_GET['niveau']) && is_file($repMonde.$_GET['niveau']))
 		<script type="text/javascript" src="modele/ModeleMur.js"></script>
 		<script type="text/javascript" src="modele/ModelePlateformeVerticale.js"></script>
 		<script type="text/javascript" src="modele/ModelePlateformeHorizontale.js"></script> 
+		<script type="text/javascript" src="modele/ModeleBalle.js"></script> 
 		<script type="text/javascript" src="vue/VueEntite.js"></script> 
 		<script type="text/javascript" src="vue/VueTroll.js"></script> 
 		<script type="text/javascript" src="vue/VueMur.js"></script> 
 		<script type="text/javascript" src="vue/VuePlayer.js"></script>
 		<script type="text/javascript" src="vue/VuePlateformeVerticale.js"></script>
 		<script type="text/javascript" src="vue/VuePlateformeHorizontale.js"></script> 	
+		<script type="text/javascript" src="vue/VueBalle.js"></script> 
 		<script type="text/javascript" src="controleur/Entite.js"></script>
 		<script type="text/javascript" src="controleur/Player.js"></script>
 		<script type="text/javascript" src="controleur/Troll.js"></script> 
@@ -93,8 +95,10 @@ if(isset($_GET['niveau']) && is_file($repMonde.$_GET['niveau']))
 		<script type="text/javascript" src="controleur/PlateformeVerticale.js"></script> 
 		<script type="text/javascript" src="controleur/PlateformeHorizontale.js"></script> 
 		<script type="text/javascript" src="controleur/Mur.js"></script> 
+		<script type="text/javascript" src="controleur/Balle.js"></script> 
 		<script type="text/javascript" src="controleur/Clavier.js"></script> 
 		<script type="text/javascript" src="utils/clone.js"></script>
+		<script type="text/javascript" src="controleur/Editeur.js"></script> 
 		<script type="text/javascript" src="game.js"></script>  
 		
 		<script>
@@ -145,7 +149,7 @@ function transformMapTxtToJs($pFichier){
    $fichier = $pFichier;
    $resourceTest = fopen($fichier, 'r');
    $tableauFinal = '';
-   $tableauFinal .= 'var map = [';
+   $tableauFinal .= 'var mapParDefaut = [';
    
    $contenu_fichier = file_get_contents($fichier);
    $nbLignes = substr_count($contenu_fichier, "\n");

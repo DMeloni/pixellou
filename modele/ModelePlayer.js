@@ -1,6 +1,8 @@
 var ModelePlayer = function(){
 	var that = this;
 	ModeleEntite.call(that); // Hérite des propriétés de l'Entite	
+	that.codeEntite    = "3";
+	that.couleurEntite = ENTITE_COULEUR_HEROS;	
 	that.firstColor = ENTITE_COULEUR_HEROS;
 	that.width  = DIM_BLOC;
 	that.height = DIM_BLOC;
