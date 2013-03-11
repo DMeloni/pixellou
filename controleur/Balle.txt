@@ -1,0 +1,6 @@
+var Balle = function(x, y){
+	var that = this;
+	ModeleBalle.call(that, x, y);
+	VueBalle.call(that, x, y);
+	return that;
+}
